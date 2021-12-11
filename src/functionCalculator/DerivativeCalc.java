@@ -21,124 +21,7 @@ public class DerivativeCalc {
 
 		char[] allowed = {'x','(',')','+','-','*','/','^','r','s','c','t'};
 
-		int[][] definers = findDefiners(brokenFunction, allowed);
-
-		int[][] functionSizes = sizeFinder(definers);
-
-		functionSizes = sortHighToLow(functionSizes);
-
-		int length = definers.length;
-
-		int[] subDefiners= new int[3];
-
-		if(definers.length>1) {
-
-			subDefiners = Array.copyArray(definers[functionSizes[1][1]]);
-
-		}else {
-
-			subDefiners[0] = definers[functionSizes[1][0]][1];
-			subDefiners[1] = definers[functionSizes[1][0]][1];
-			subDefiners[2] = definers[functionSizes[1][0]][1];
-
-		}
-
-		char[] derivative = derive(brokenFunction, definers[functionSizes[1][0]], subDefiners);
-
-		int start = Math.max(definers[functionSizes[1][0]][0], 0);
-
-		int count = 0;
-
-		for (int i = start;i<=subDefiners[0];i++) {
-
-			if (definers[functionSizes[1][0]][0]>=0) {
-				brokenFunction = Array.deleteElement(brokenFunction, definers[functionSizes[1][0]][0]);
-			}else if (i<(definers[functionSizes[1][0]][2]-1)){
-				brokenFunction = Array.deleteElement(brokenFunction, (definers[functionSizes[1][0]][0]+1));
-			}
-
-			count++;
-
-		}
-
-		subDefiners[2]-=count;
-		definers[functionSizes[1][0]][2]-=count;
-
-		for (int i = subDefiners[2]+1;i<definers[functionSizes[1][0]][2];i++) {
-
-			if (definers[functionSizes[1][0]][0]>=0) {
-				brokenFunction = Array.deleteElement(brokenFunction, subDefiners[2]+1);
-			}else if (i<(definers[functionSizes[1][0]][2]-1)&&brokenFunction.length>0){
-				brokenFunction = Array.deleteElement(brokenFunction, subDefiners[2]+1);
-			}
-
-		}
-
-		for (int i = derivative.length-1;i>=0;i--) {
-
-			if (definers[functionSizes[1][0]][0]>=0) {
-				returnFunction = Array.insertElement(returnFunction, derivative[i], definers[functionSizes[1][0]][0]);
-			}else {
-				returnFunction = Array.insertElement(returnFunction, derivative[i], (definers[functionSizes[1][0]][0]+1));
-			}
-
-		}
-
-		for (int j = 1;j<length;j++) {
-
-			definers = findDefiners(brokenFunction, allowed);
-
-			functionSizes = sizeFinder(definers);
-
-			functionSizes = sortHighToLow(functionSizes);
-
-			if(definers.length>1) {
-
-				subDefiners = Array.copyArray(definers[functionSizes[1][1]]);
-
-			}else {
-
-				subDefiners[0] = definers[functionSizes[1][0]][1];
-				subDefiners[1] = definers[functionSizes[1][0]][1];
-				subDefiners[2] = definers[functionSizes[1][0]][1];
-
-			}
-
-			derivative =  derive(brokenFunction, definers[functionSizes[1][0]], subDefiners);
-
-			for (int i = definers[functionSizes[1][0]][0];i<=subDefiners[0];i++) {
-
-				if (definers[functionSizes[1][0]][0]>=0) {
-					brokenFunction = Array.deleteElement(brokenFunction, definers[functionSizes[1][0]][0]);
-				}else if (i<(definers[functionSizes[1][0]][2]-1)){
-					brokenFunction = Array.deleteElement(brokenFunction, (definers[functionSizes[1][0]][0]+1));
-				}
-
-			}
-
-			for (int i = subDefiners[2];i<=definers[functionSizes[1][0]][2];i++) {
-
-				if (definers[functionSizes[1][0]][0]>=0) {
-					brokenFunction = Array.deleteElement(brokenFunction, definers[functionSizes[1][0]][0]);
-				}else if (i<(definers[functionSizes[1][0]][2]-1)){
-					brokenFunction = Array.deleteElement(brokenFunction, (definers[functionSizes[1][0]][0]+1));
-				}
-
-			}
-
-			returnFunction = Array.insertElement(returnFunction, '*', returnFunction.length);
-
-			for (int i = 0;i<derivative.length;i++) {
-
-				if (definers[functionSizes[1][0]][0]>=0) {
-					returnFunction = Array.insertElement(returnFunction, derivative[i], returnFunction.length);
-				}else {
-					returnFunction = Array.insertElement(returnFunction, derivative[i], returnFunction.length);
-				}
-
-			}
-
-		}
+		returnFunction = derive(brokenFunction, allowed);
 
 		System.out.println("f'(x)=" + new String(returnFunction));
 
@@ -305,73 +188,225 @@ public class DerivativeCalc {
 
 	}
 
-	public static char[] result(char[] function, int[] definer) {
+	private static char[] derive (char[] function, char[] allowed) {
 
-		String resultString = "";
-		char[] result;
+		char[] returnFunction = new char[0];
 
-		double value1 = 0;
-		double value2 = 0;
+		int[][] definers = findDefiners(function, allowed);
 
-		boolean swap = false;
-		double swapVal = 0;
+		int[][] functionSizes = sizeFinder(definers);
 
-		for (int j = definer[0]+1;j<definer[1];j++) {
-			if (function[j]=='x') {
+		functionSizes = sortHighToLow(functionSizes);
 
-				break;
+		int length = definers.length;
+
+		int[] subDefiners= new int[3];
+
+		if (definers.length==0) {
+
+			int pos = Array.findElement('x', function);
+
+			function = Array.deleteElement(function, pos);
+
+			return function;
+
+		}else if(definers.length>1) {
+
+			subDefiners = Array.copyArray(definers[functionSizes[1][1]]);
+
+		}else {
+
+			subDefiners[0] = definers[functionSizes[1][0]][1];
+			subDefiners[1] = definers[functionSizes[1][0]][1];
+			subDefiners[2] = definers[functionSizes[1][0]][1];
+
+			if (function[definers[functionSizes[1][0]][1]]=='^') {
+
+				subDefiners[0] = definers[functionSizes[1][0]][0] + 1;
+				subDefiners[2] = definers[functionSizes[1][0]][1] - 1;
+				definers = MDArray.insertRow(definers, subDefiners, definers.length);
 
 			}
-			if (function[j]=='.') {
-				swap = true;
-				swapVal+=j;
-			}else if (swap) {
-				value1+=((double)(function[j]-'0')/(10*(j-swapVal)));
-			}else if (!swap){
-				value1*=10;
-				value1+=(function[j]-'0');
-			}
+
 		}
 
-		swap = false;
-		swapVal = 0;
+		char[] derivative = new char[0];
 
-		for (int j = definer[1]+1;j<definer[2];j++) {
-			if (function[j]=='x'||function[j]=='(') {
-
-				break;
-
-			}
-			if (function[j]=='.') {
-				swap = true;
-				swapVal+=j;
-			}else if (swap) {
-				value2+=((double)(function[j]-'0')/(Math.pow(10, (j-swapVal))));
-			}else if (!swap){
-				value2*=10;
-				value2+=(function[j]-'0');
-			}
+		if (function[definers[functionSizes[1][0]][1]]=='*') {
+			derivative = product(function, definers[functionSizes[1][0]], subDefiners, allowed);
+			char[][] updated = specialUpdateFunctions(definers, derivative, function, returnFunction, functionSizes);
+			function = Array.copyArray(updated[0]);
+			returnFunction = Array.copyArray(updated[1]);
+		}else if (function[definers[functionSizes[1][0]][1]]=='/') {
+			derivative = quotient(function, definers[functionSizes[1][0]], subDefiners, allowed);
+			char[][] updated = specialUpdateFunctions(definers, derivative, function, returnFunction, functionSizes);
+			function = Array.copyArray(updated[0]);
+			returnFunction = Array.copyArray(updated[1]);
+		}else {
+			derivative = stndDerive(function, definers[functionSizes[1][0]], subDefiners);
+			char[][] updated = updateFunctions(definers, subDefiners, derivative, function, returnFunction, functionSizes);
+			function = Array.copyArray(updated[0]);
+			returnFunction = Array.copyArray(updated[1]);
 		}
 
-		switch (function[definer[1]]){
-		case '+': resultString = Double.toString(value1 + value2);break;
-		case '-': resultString = Double.toString(value1 - value2);break;
-		case '*': resultString = Double.toString(value1 * value2);break;
-		case '/': resultString = Double.toString(value1 / value2);break;
-		case '^': resultString = Double.toString(Math.pow(value1, value2));break;
-		//case 'r': resultString = Double.toString(Math.sqrt(value2));break;
-		case 's': resultString = Double.toString(Math.sin(Math.toRadians(value2)));break;
-		case 'c': resultString = Double.toString(Math.cos(Math.toRadians(value2)));break;
-		case 't': resultString = Double.toString(Math.tan(Math.toRadians(value2)));break;
+		definers = findDefiners(function, allowed);
+
+		length = definers.length;
+
+		if (length==0&&function.length>1) {
+
+			int pos = Array.findElement('x', function);
+
+			if (pos>-1) {
+				function = Array.deleteElement(function, pos);
+			}
+
+			int[][] specialDefiner = {{0,0,function.length}};
+			int[][] specialSize = {{0,0}};
+
+			char[][] updated = specialUpdateFunctions(specialDefiner, derivative, function, returnFunction, specialSize);
+			function = Array.copyArray(updated[0]);
+			returnFunction = Array.copyArray(updated[1]);
+
 		}
 
-		result = resultString.toCharArray();
+		for (int j = 1;j<length;j++) {
 
-		return result;
+			definers = findDefiners(function, allowed);
+
+			functionSizes = sizeFinder(definers);
+
+			functionSizes = sortHighToLow(functionSizes);
+
+			if(definers.length>1) {
+
+				subDefiners = Array.copyArray(definers[functionSizes[1][1]]);
+
+			}else {
+
+				subDefiners[0] = definers[functionSizes[1][0]][1];
+				subDefiners[1] = definers[functionSizes[1][0]][1];
+				subDefiners[2] = definers[functionSizes[1][0]][1];
+
+			}
+
+			if (function[definers[functionSizes[1][0]][1]]=='*') {
+				derivative = product(function, definers[functionSizes[1][0]], subDefiners, allowed);
+				char[][] updated = specialUpdateFunctions(definers, derivative, function, returnFunction, functionSizes);
+				function = Array.copyArray(updated[0]);
+				returnFunction = Array.copyArray(updated[1]);
+			}else if (function[definers[functionSizes[1][0]][1]]=='/') {
+				derivative = quotient(function, definers[functionSizes[1][0]], subDefiners, allowed);
+				char[][] updated = specialUpdateFunctions(definers, derivative, function, returnFunction, functionSizes);
+				function = Array.copyArray(updated[0]);
+				returnFunction = Array.copyArray(updated[1]);
+			}else {
+				derivative = stndDerive(function, definers[functionSizes[1][0]], subDefiners);
+				char[][] updated = updateFunctions(definers, subDefiners, derivative, function, returnFunction, functionSizes);
+				function = Array.copyArray(updated[0]);
+				returnFunction = Array.copyArray(updated[1]);
+			}
+
+			returnFunction = Array.insertElement(returnFunction, '*', returnFunction.length);
+
+		}
+
+		if (returnFunction[returnFunction.length-1]=='*') {
+			returnFunction = Array.deleteElement(returnFunction, returnFunction.length-1);
+		}
+
+		return returnFunction;
 
 	}
 
-	public static char[] derive(char[] function, int[] definer, int[] subDefiner) {
+	public static char[][] updateFunctions(int[][] definers, int[] subDefiners, char[] derivative, char[] function, char[] returnFunction, int[][] functionSizes) {
+
+		char[][] returnFunctions = new char[2][];
+
+		int start = Math.max(definers[functionSizes[1][0]][0], 0);
+
+		int count = 0;
+
+		for (int i = start;i<=subDefiners[0];i++) {
+
+			if (definers[functionSizes[1][0]][0]>=0) {
+				function = Array.deleteElement(function, definers[functionSizes[1][0]][0]);
+			}else if (i<(definers[functionSizes[1][0]][2]-1)){
+				function = Array.deleteElement(function, (definers[functionSizes[1][0]][0]+1));
+			}
+
+			count++;
+
+		}
+
+		subDefiners[2]-=count;
+		definers[functionSizes[1][0]][2]-=count;
+
+		for (int i = subDefiners[2]-1;i<definers[functionSizes[1][0]][2];i++) {
+
+			if (definers[functionSizes[1][0]][0]>=0) {
+				function = Array.deleteElement(function, subDefiners[2]+1);
+			}else if (i<(definers[functionSizes[1][0]][2]-1)&&function.length>0){
+				function = Array.deleteElement(function, subDefiners[2]+1);
+			}
+
+		}
+
+		for (int i = derivative.length-1;i>=0;i--) {
+
+			if (definers[functionSizes[1][0]][0]>=0) {
+				returnFunction = Array.insertElement(returnFunction, derivative[i], definers[functionSizes[1][0]][0]);
+			}else {
+				returnFunction = Array.insertElement(returnFunction, derivative[i], (definers[functionSizes[1][0]][0]+1));
+			}
+
+		}
+
+		returnFunctions[0] = function;
+		returnFunctions[1] = returnFunction;
+
+		return returnFunctions;
+
+	}
+
+	public static char[][] specialUpdateFunctions(int[][] definers, char[] derivative, char[] function, char[] returnFunction, int[][] functionSizes) {
+
+		char[][] returnFunctions = new char[2][];
+
+		int start = 0;
+		
+		if (functionSizes.length>1) {
+			start = Math.max(definers[functionSizes[1][0]][0], 0);
+		}
+		
+		for (int i = start;i<=definers[functionSizes[1][0]][2];i++) {
+
+			if (definers[functionSizes[1][0]][0]>=0) {
+				function = Array.deleteElement(function, definers[functionSizes[1][0]][0]);
+			}else if (i<(definers[functionSizes[1][0]][2]-1)){
+				function = Array.deleteElement(function, (definers[functionSizes[1][0]][0]+1));
+			}
+
+		}
+
+		for (int i = derivative.length-1;i>=0;i--) {
+
+			if (definers[functionSizes[1][0]][0]>=0) {
+				returnFunction = Array.insertElement(returnFunction, derivative[i], definers[functionSizes[1][0]][0]);
+			}else {
+				returnFunction = Array.insertElement(returnFunction, derivative[i], (definers[functionSizes[1][0]][0]+1));
+			}
+
+		}
+
+		returnFunctions[0] = function;
+		returnFunctions[1] = returnFunction;
+
+		return returnFunctions;
+
+	}
+
+	public static char[] stndDerive(char[] function, int[] definer, int[] subDefiner) {
 
 		String resultString = "";
 		char[] result;
@@ -501,7 +536,7 @@ public class DerivativeCalc {
 			switch ((int) value2) {
 			case 1: resultString = Double.toString(value1);break;
 			case 2: resultString = value1*2 + new String (x);break;
-			default: resultString = "(" + Double.toString(value2*value1) + new String (x) + "^" + Double.toString(value2-1) + ")";break;
+			default: resultString = Double.toString(value2*value1) + new String (x) + "^" + Double.toString(value2-1);break;
 			}break;
 			//case 'r': resultString = Double.toString(Math.sqrt(value2));break;
 		case 's': resultString = "(c" + new String (x) + ")";break;
@@ -514,31 +549,62 @@ public class DerivativeCalc {
 		return result;
 
 	}
-	
-	public static char[] product(char[] function, int[] definer, int[] subDefiner) {
+
+	public static char[] quotient(char[] function, int[] definer, int[] subDefiner, char[] allowed) {
 
 		String resultString = "";
 		char[] result;
 
 		char[] fx = new char[0];
 		char[] gx = new char[0];
-		
-		for (int j = definer[0];j<definer[1];j++) {
-			
+
+		for (int j = definer[0]+2;j<definer[1]-1;j++) {
+
 			fx = Array.insertElement(fx, function[j], fx.length);
-			
+
 		}
-		
-		for (int j = definer[1]+1;j<definer[2];j++) {
-			
+
+		for (int j = definer[1]+2;j<definer[2]-1;j++) {
+
 			gx = Array.insertElement(gx, function[j], gx.length);
-			
+
 		}
-		
-		char[] fpx = derive(fx);
-		char[] gpx = derive(gx);
-		
+
+		char[] fpx = derive(fx, allowed);
+		char[] gpx = derive(gx, allowed);
+
 		resultString = "(((" + new String (gx) + ")*(" + new String (fpx) + "))-((" + new String (fx) + ")*(" + new String (gpx) + ")))/((" + new String (gx) + ")^2)";
+
+		result = resultString.toCharArray();
+
+		return result;
+
+	}
+
+	public static char[] product(char[] function, int[] definer, int[] subDefiner, char[] allowed) {
+
+		String resultString = "";
+		char[] result;
+
+		char[] fx = new char[0];
+		char[] gx = new char[0];
+
+		for (int j = definer[0]+2;j<definer[1]-1;j++) {
+
+			fx = Array.insertElement(fx, function[j], fx.length);
+
+		}
+
+		for (int j = definer[1]+2;j<definer[2]-1;j++) {
+
+			gx = Array.insertElement(gx, function[j], gx.length);
+
+		}
+
+		char[] fpx = derive(fx, allowed);
+		char[] gpx = derive(gx, allowed);
+
+		resultString = "((" + new String (gx) + ")*(" + new String (fpx) + "))+((" + new String (fx) + ")*(" + new String (gpx) + "))";
 
 		result = resultString.toCharArray();
 
