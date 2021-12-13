@@ -206,7 +206,14 @@ public class DerivativeCalc {
 
 			int pos = Array.findElement('x', function);
 
-			function = Array.deleteElement(function, pos);
+			if (pos>-1) {
+				function = Array.deleteElement(function, pos);
+			}
+			if (function.length==0) {
+
+				function = Array.insertElement(function, '1', 0);
+
+			}
 
 			return function;
 
@@ -254,23 +261,32 @@ public class DerivativeCalc {
 		length = definers.length;
 
 		if (length==0&&function.length>1) {
+			int[][] specialDefiner = {{0,0,function.length}};
+			int[][] specialSize = {{0,0},{0,0}};
 
-			int pos = Array.findElement('x', function);
+			int r = 0;
 
-			if (pos>-1) {
-				function = Array.deleteElement(function, pos);
+			derivative = new char[0];
+
+			while (function[r]!='x') {
+
+				derivative = Array.insertElement(derivative, function[r], derivative.length);
+				r++;
+
 			}
 
-			int[][] specialDefiner = {{0,0,function.length}};
-			int[][] specialSize = {{0,0}};
-
+			returnFunction = Array.insertElement(returnFunction, '*', returnFunction.length);
 			char[][] updated = specialUpdateFunctions(specialDefiner, derivative, function, returnFunction, specialSize);
 			function = Array.copyArray(updated[0]);
 			returnFunction = Array.copyArray(updated[1]);
 
 		}
 
-		for (int j = 1;j<length;j++) {
+		for (int j = 0;j<length;j++) {
+
+			returnFunction = Array.insertElement(returnFunction, ')', returnFunction.length);
+			returnFunction = Array.insertElement(returnFunction, '*', returnFunction.length);
+			returnFunction = Array.insertElement(returnFunction, '(', 0);
 
 			definers = findDefiners(function, allowed);
 
@@ -306,8 +322,6 @@ public class DerivativeCalc {
 				function = Array.copyArray(updated[0]);
 				returnFunction = Array.copyArray(updated[1]);
 			}
-
-			returnFunction = Array.insertElement(returnFunction, '*', returnFunction.length);
 
 		}
 
@@ -345,19 +359,19 @@ public class DerivativeCalc {
 		for (int i = subDefiners[2]-1;i<definers[functionSizes[1][0]][2];i++) {
 
 			if (definers[functionSizes[1][0]][0]>=0) {
-				function = Array.deleteElement(function, subDefiners[2]+1);
+				function = Array.deleteElement(function, subDefiners[2]);
 			}else if (i<(definers[functionSizes[1][0]][2]-1)&&function.length>0){
-				function = Array.deleteElement(function, subDefiners[2]+1);
+				function = Array.deleteElement(function, Math.max(subDefiners[2], 0));
 			}
 
 		}
 
-		for (int i = derivative.length-1;i>=0;i--) {
+		for (int i = 0;i<derivative.length;i++) {
 
 			if (definers[functionSizes[1][0]][0]>=0) {
-				returnFunction = Array.insertElement(returnFunction, derivative[i], definers[functionSizes[1][0]][0]);
+				returnFunction = Array.insertElement(returnFunction, derivative[i], returnFunction.length);
 			}else {
-				returnFunction = Array.insertElement(returnFunction, derivative[i], (definers[functionSizes[1][0]][0]+1));
+				returnFunction = Array.insertElement(returnFunction, derivative[i], returnFunction.length);
 			}
 
 		}
@@ -374,14 +388,14 @@ public class DerivativeCalc {
 		char[][] returnFunctions = new char[2][];
 
 		int start = 0;
-		
+
 		if (functionSizes.length>1) {
 			start = Math.max(definers[functionSizes[1][0]][0], 0);
 		}
-		
+
 		for (int i = start;i<=definers[functionSizes[1][0]][2];i++) {
 
-			if (definers[functionSizes[1][0]][0]>=0) {
+			if (definers[functionSizes[1][0]][0]>0) {
 				function = Array.deleteElement(function, definers[functionSizes[1][0]][0]);
 			}else if (i<(definers[functionSizes[1][0]][2]-1)){
 				function = Array.deleteElement(function, (definers[functionSizes[1][0]][0]+1));
@@ -389,12 +403,12 @@ public class DerivativeCalc {
 
 		}
 
-		for (int i = derivative.length-1;i>=0;i--) {
+		for (int i = 0;i<derivative.length;i++) {
 
 			if (definers[functionSizes[1][0]][0]>=0) {
-				returnFunction = Array.insertElement(returnFunction, derivative[i], definers[functionSizes[1][0]][0]);
+				returnFunction = Array.insertElement(returnFunction, derivative[i], returnFunction.length);
 			}else {
-				returnFunction = Array.insertElement(returnFunction, derivative[i], (definers[functionSizes[1][0]][0]+1));
+				returnFunction = Array.insertElement(returnFunction, derivative[i], returnFunction.length);
 			}
 
 		}
@@ -535,12 +549,12 @@ public class DerivativeCalc {
 		case '^': 
 			switch ((int) value2) {
 			case 1: resultString = Double.toString(value1);break;
-			case 2: resultString = value1*2 + new String (x);break;
-			default: resultString = Double.toString(value2*value1) + new String (x) + "^" + Double.toString(value2-1);break;
+			case 2: resultString = value1*2 + "*" + new String (x);break;
+			default: resultString = Double.toString(value2*value1) + "*(" + new String (x) + "^" + Double.toString(value2-1) + ")";break;
 			}break;
 			//case 'r': resultString = Double.toString(Math.sqrt(value2));break;
 		case 's': resultString = "(c" + new String (x) + ")";break;
-		case 'c': resultString = "(-s" + new String (x) + ")";break;
+		case 'c': resultString = "(-(s" + new String (x) + "))";break;
 		case 't': resultString = "(1/((c" + new String(x) + ")^2)";break;
 		}
 
