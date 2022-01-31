@@ -1,4 +1,4 @@
-package functionCalculator;
+package functionCalculatorOBJ;
 
 import java.util.Scanner;
 import array.Array;
@@ -549,8 +549,6 @@ public class DerivativeCalc {
 			}break;
 		case '^': 
 			switch ((int) value2) {
-			
-
 			case 1: resultString = Double.toString(value1);break;
 			case 2: resultString = value1*2 + "*" + new String (x);break;
 			default: resultString = Double.toString(value2*value1) + "*(" + new String (x) + "^" + Double.toString(value2-1) + ")";break;
